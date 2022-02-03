@@ -8,7 +8,7 @@ build:
 		-e GOOS=linux \
 		-e GOARCH=amd64 \
 		-e CGO_ENABLED=1 \
-		lambci/lambda:build-go1.x \
+		golang:1.17 \
 		go build -v -o bin/cloudquery
 
 .PHONY: init

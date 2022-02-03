@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
-	github.com/aws/aws-lambda-go v1.23.0
 	github.com/cloudquery/cq-provider-sdk v0.7.0
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.4.9
@@ -34,7 +33,7 @@ require (
 
 require (
 	github.com/ProtonMail/go-crypto v0.0.0-20211221144345-a4f6767435ab
-	github.com/aws/aws-sdk-go v1.42.1
+	github.com/aws/aws-sdk-go v1.42.44
 	github.com/creasty/defaults v1.5.2
 	github.com/doug-martin/goqu/v9 v9.17.0
 	github.com/georgysavva/scany v0.2.9
@@ -126,7 +125,7 @@ require (
 	go.uber.org/atomic v1.6.0 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20211008194852-3b03d305991f // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914 // indirect
 	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 // indirect
 	golang.org/x/text v0.3.7 // indirect

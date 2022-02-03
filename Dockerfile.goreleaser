@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM scratch
 ENTRYPOINT ["/app/cloudquery"]
 WORKDIR /app
 COPY cloudquery .

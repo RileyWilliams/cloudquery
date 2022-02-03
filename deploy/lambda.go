@@ -5,8 +5,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/cloudquery/cloudquery/pkg/client"
 	"github.com/cloudquery/cloudquery/pkg/config"
+
 	"github.com/spf13/viper"
 )
 
@@ -16,6 +21,8 @@ type Request struct {
 }
 
 func LambdaHandler(ctx context.Context, req Request) (string, error) {
+
+	getSecret("test")
 	return TaskExecutor(ctx, req)
 }
 
@@ -37,15 +44,22 @@ func TaskExecutor(ctx context.Context, req Request) (string, error) {
 	}
 	viper.Set("policy-dir", policyDir)
 
+	// cfg, diags := config.NewParser(
+	// 	config.WithEnvironmentVariables(config.EnvVarPrefix, os.Environ()),
+	// ).LoadConfigFromSource("config.hcl", []byte(req.HCL))
 	cfg, diags := config.NewParser(
 		config.WithEnvironmentVariables(config.EnvVarPrefix, os.Environ()),
-	).LoadConfigFromSource("config.hcl", []byte(req.HCL))
+	).LoadConfigFile("config.hcl")
 	if diags != nil {
 		return "", fmt.Errorf("bad configuration: %s", diags)
 	}
+
+	// fmt.Println(cfg)
 	// Override dsn env if set
 	if dsn != "" {
-		cfg.CloudQuery.Connection.DSN = dsn
+		res := getSecret("test")
+		fmt.Println("dsn", res)
+		cfg.CloudQuery.Connection.DSN = res
 	}
 
 	completedMsg := fmt.Sprintf("Completed task %s", req.TaskName)
@@ -105,4 +119,40 @@ func Policy(ctx context.Context, cfg *config.Config) error {
 		return fmt.Errorf("error running query: %s", err)
 	}
 	return nil
+}
+
+func getSecret(secretId string) string {
+
+	svc := secretsmanager.New(session.New())
+
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String(secretId),
+	}
+	res, err := svc.GetSecretValue(input)
+
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case secretsmanager.ErrCodeResourceNotFoundException:
+				fmt.Println(secretsmanager.ErrCodeResourceNotFoundException, aerr.Error())
+			case secretsmanager.ErrCodeInvalidParameterException:
+				fmt.Println(secretsmanager.ErrCodeInvalidParameterException, aerr.Error())
+			case secretsmanager.ErrCodeInvalidRequestException:
+				fmt.Println(secretsmanager.ErrCodeInvalidRequestException, aerr.Error())
+			case secretsmanager.ErrCodeDecryptionFailure:
+				fmt.Println(secretsmanager.ErrCodeDecryptionFailure, aerr.Error())
+			case secretsmanager.ErrCodeInternalServiceError:
+				fmt.Println(secretsmanager.ErrCodeInternalServiceError, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		os.Exit(1)
+	}
+
+	return *res.SecretString
 }
