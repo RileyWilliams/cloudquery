@@ -28,6 +28,7 @@ func LambdaHandler(ctx context.Context, req Request) (string, error) {
 
 func TaskExecutor(ctx context.Context, req Request) (string, error) {
 	dsn := os.Getenv("CQ_DSN")
+	databasePasswordName := os.Getenv("CQ_DB_PASSWORD")
 	dataDir, present := os.LookupEnv("CQ_DATA_DIR")
 	if !present {
 		dataDir = ".cq"
@@ -44,20 +45,16 @@ func TaskExecutor(ctx context.Context, req Request) (string, error) {
 	}
 	viper.Set("policy-dir", policyDir)
 
-	// cfg, diags := config.NewParser(
-	// 	config.WithEnvironmentVariables(config.EnvVarPrefix, os.Environ()),
-	// ).LoadConfigFromSource("config.hcl", []byte(req.HCL))
 	cfg, diags := config.NewParser(
 		config.WithEnvironmentVariables(config.EnvVarPrefix, os.Environ()),
-	).LoadConfigFile("config.hcl")
+	).LoadConfigFromSource("config.hcl", []byte(req.HCL))
 	if diags != nil {
 		return "", fmt.Errorf("bad configuration: %s", diags)
 	}
 
-	// fmt.Println(cfg)
 	// Override dsn env if set
 	if dsn != "" {
-		res := getSecret("test")
+		res := getSecret(databasePasswordName)
 		fmt.Println("dsn", res)
 		cfg.CloudQuery.Connection.DSN = res
 	}
